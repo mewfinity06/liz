@@ -1,0 +1,7 @@
+.{
+    .name = .liz,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.16.0-dev.197+1a5cf072a",
+    .paths = .{""},
+    .fingerprint = 0xba63a39ab5201624,
+}
