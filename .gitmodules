@@ -1,0 +1,3 @@
+[submodule "src/libs/zig-toml"]
+	path = src/libs/zig-toml
+	url = https://github.com/sam701/zig-toml.git
