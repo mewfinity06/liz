@@ -1,3 +1,6 @@
 [submodule "src/libs/zig-toml"]
 	path = src/libs/zig-toml
 	url = https://github.com/sam701/zig-toml.git
+[submodule "src/libs/datetime"]
+	path = src/libs/datetime
+	url = https://github.com/frmdstryr/zig-datetime
