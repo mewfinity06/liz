@@ -32,8 +32,8 @@ pub fn main() !void {
     if (eql(u8, args[1], "help")) try commands.help();
     if (eql(u8, args[1], "init")) try commands.init(alloc);
     if (eql(u8, args[1], "list")) try commands.list(alloc);
-    if (eql(u8, args[1], "switch")) try commands.switch_version(null);
-    if (eql(u8, args[1], "install")) try commands.install(null);
+    if (eql(u8, args[1], "switch")) try commands.switch_version(alloc, null);
+    if (eql(u8, args[1], "install")) try commands.install(alloc, null);
 }
 
 pub fn is_posix_target() bool {
