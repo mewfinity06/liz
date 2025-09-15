@@ -1,6 +1,10 @@
 const std = @import("std");
+
 const toml = @import("libs/zig-toml/src/root.zig");
 const datetime = @import("libs/datetime/src/datetime.zig");
+
+const Instance = @import("instance.zig").Instance;
+const InstanceList = @import("instance.zig").InstanceList;
 
 const Child = std.process.Child;
 
@@ -31,31 +35,6 @@ pub const BranchType = union(enum) {
     git, // source
     unstable, // nightly
     stable, // latest
-};
-
-pub const ListOfInstances = struct {
-    instances: ?[]ZigInstance,
-
-    pub fn from_toml(alloc: std.mem.Allocator, path: []const u8) !toml.Parsed(ListOfInstances) {
-        var parser = toml.Parser(ListOfInstances).init(alloc);
-        defer parser.deinit();
-        return try parser.parseFile(path);
-    }
-};
-
-pub const ZigInstance = struct {
-    // https://ziglang.org/download/
-    url: []const u8,
-    // Semantic versioning: i.e. 0.16.0
-    version: []const u8,
-    // SHA-sum
-    hash: []const u8,
-    // MONTH-DAY-YEAR: i.e. JAN-01-2025
-    date_added: []const u8,
-
-    pub fn display(self: *ZigInstance) void {
-        std.debug.print("Zig {s}#{s} ({s})\n", .{ self.version, self.hash, self.date_added });
-    }
 };
 
 fn read_file(alloc: std.mem.Allocator, path: []const u8) ![]const u8 {
@@ -110,7 +89,7 @@ pub fn list(alloc: std.mem.Allocator) !void {
     });
     defer alloc.free(path);
 
-    var res = try ListOfInstances.from_toml(alloc, path);
+    var res = try InstanceList.from_toml(alloc, path);
     defer res.deinit();
 
     if (res.value.instances) |instances| {
@@ -150,12 +129,12 @@ fn install_git(alloc: std.mem.Allocator, path: []const u8) !void {
 
     // TODO: Get zig version for name as well (i.e. zig-0.16.0-2025-09-14)
     //       But now we just have "zig-2025-09-14"
-    const zig_new_path_name = try std.fm.allocPrint(alloc, "", .{});
+    const zig_new_path_name = try std.fmt.allocPrint(alloc, "", .{});
 
     // cd $PATH && git clone ZIGLANG_GIT_PATH zig-$TIME
     const args = try std.fmt.allocPrint(
         alloc,
-        "cd {s} && git clone --depth=1 {s}",
+        "cd {s} && git clone --depth=1 {s} {s}",
         .{ path, ZIGLANG_GIT_PATH, zig_new_path_name },
     );
     defer alloc.free(args);
@@ -183,7 +162,7 @@ pub fn install(alloc: std.mem.Allocator, version: ?[]const u8) !void {
     });
     defer alloc.free(toml_path);
 
-    var res = try ListOfInstances.from_toml(alloc, toml_path);
+    var res = try InstanceList.from_toml(alloc, toml_path);
     defer res.deinit();
 
     _ = version;
