@@ -6,7 +6,7 @@ const ArrayList = std.ArrayList;
 var LIZ_DIR: []const u8 = undefined;
 var HOME_DIR: []const u8 = undefined;
 const ZIGLANG_GIT_PATH: []const u8 = "https://github.com/ziglang/zig";
-const ZIGLANG_TOML_PATH: []const u8 = "ziglang-versions.toml";
+const ZIGLANG_TOML_PATH: []const u8 = "ziglang-installed-versions.toml";
 const HELP_MESSAGE: []const u8 =
     \\[Usage] ./liz <command>
     \\  Command           -> Functionality
@@ -14,26 +14,22 @@ const HELP_MESSAGE: []const u8 =
     \\  help              -> display this help
     \\  init              -> initialize ~/.liz directory
     \\  list              -> list installed versions
-    \\  set <version>     -> set the simlink to the specific version
+    \\  switch  <arg>     -> switch to <version | branch>
     \\  install <version> -> install specific version
-    \\                       | <version> uses SEMVER (i.e. "0.15.1")
-    \\  get [branch]      -> install specific branch, default `stable`
-    \\                       | git/source
-    \\                       | unstable/nightly
-    \\                       | stable/latest (release)
+    \\                       | <version> uses SEMVER (i.e. "0.16.0")
+    \\                       | or name ("master", "source")
+    \\                       | Default: "master"
     \\  ----------------------------------------------
-    \\  NOTE: Version and branch is not yet implemented, 
-    \\        Liz will default to the latest release
 ;
 
-pub const BranchType = enum {
+pub const BranchType = union(enum) {
     git, // source
     unstable, // nightly
     stable, // latest
 };
 
 pub const ListOfInstances = struct {
-    instances: []ZigInstance,
+    instances: ?[]ZigInstance,
 };
 
 pub const ZigInstance = struct {
@@ -42,7 +38,7 @@ pub const ZigInstance = struct {
     hash: []const u8,
 
     pub fn display(self: *ZigInstance) void {
-        std.debug.print("Zig {s}\n", .{self.version});
+        std.debug.print("Zig {s}#{s}\n", .{ self.version, self.hash });
     }
 };
 
@@ -104,17 +100,21 @@ pub fn list(alloc: std.mem.Allocator) !void {
     var res = try parser.parseFile(toml_path);
     defer res.deinit();
 
-    std.debug.print("Installed Zig Versions\n", .{});
-    for (res.value.instances, 0..) |*instance, i| {
-        std.debug.print("[{}] ", .{i});
-        instance.display();
+    if (res.value.instances) |instances| {
+        std.debug.print("Installed Zig Versions ({})\n", .{instances.len});
+        for (instances, 0..) |*instance, i| {
+            std.debug.print("[{}] ", .{i});
+            instance.display();
+        }
+    } else {
+        std.debug.print("No installed versions\n", .{});
     }
 }
 
-pub fn get(branch: BranchType) !void {
-    _ = branch;
+pub fn switch_version(version: ?[]const u8) !void {
+    _ = version;
 }
 
-pub fn install(version: []const u8) !void {
+pub fn install(version: ?[]const u8) !void {
     _ = version;
 }
